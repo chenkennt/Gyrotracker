@@ -33,11 +33,25 @@
 </head>
 
 <body>
-  <div class="garden">
-    <div class="ball"></div>
+  <div id="app" class="container">
+    <div class="row">
+      <div v-for="d in devices" class="col-3">
+        <div class="container">
+          <div class="row d-flex justify-content-center m-2">
+            <h4>{{ d.name }}</h4>
+          </div>
+          <div class="row d-flex justify-content-center">
+            <div class="garden">
+              <div class="ball" v-bind:style="{ top: top(d.x) + 'px', left: left(d.y) + 'px' }"></div>
+            </div>
+          </div>
+          <div class="row d-flex justify-content-center">
+            beta: {{ d.x }} gamma: {{ d.y }}
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <pre class="output"></pre>
 
   <!-- Optional JavaScript -->
   <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -48,14 +62,28 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
     crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@aspnet/signalr@1.0.0/dist/browser/signalr.min.js"></script>
-  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue"></script>
   <script>
     var ball = document.querySelector('.ball');
     var garden = document.querySelector('.garden');
-    var output = document.querySelector('.output');
 
-    var maxX = garden.clientWidth - ball.clientWidth;
-    var maxY = garden.clientHeight - ball.clientHeight;
+    var gardenWidth = garden.clientWidth;
+    var gardenHeight = garden.clientHeight;
+    var ballWidth = ball.clientWidth;
+    var ballHeight = ball.clientHeight;
+
+    var appData = {
+      devices: []
+    };
+
+    var app = new Vue({
+      el: '#app',
+      data: appData,
+      methods: {
+        top: x => (Math.min(Math.max(x, -90), 90) / 180 + 0.5) * gardenWidth - ballWidth / 2,
+        left: y => (y / 180 + 0.5) * gardenHeight - ballHeight / 2
+      }
+    });
 
     function connect(url, connected, disconnected) {
       var connectWithRetry = c => c.start().then(() => connected(c)).catch(error => {
@@ -78,24 +106,14 @@
     }
 
     var connection = connect('/sensor', () => 0, () => 0);
-    connection.on('update', (x, y) => {
-      output.innerHTML = "beta : " + x + "\n";
-      output.innerHTML += "gamma: " + y + "\n";
-
-      // Because we don't want to have the device upside down
-      // We constrain the x value to the range [-90,90]
-      if (x > 90) { x = 90 };
-      if (x < -90) { x = -90 };
-
-      // To make computation easier we shift the range of 
-      // x and y to [0,180]
-      x += 90;
-      y += 90;
-
-      // 10 is half the size of the ball
-      // It center the positioning point to the center of the ball
-      ball.style.top = (maxX * x / 180 - 10) + "px";
-      ball.style.left = (maxY * y / 180 - 10) + "px";
+    connection.on('update', (x, y, name) => {
+      var d = { x: x, y: y, name: name };
+      for (var i = 0; i < appData.devices.length; i++)
+        if (appData.devices[i].name === name) {
+          Vue.set(appData.devices, i, d);
+          return;
+        }
+      Vue.set(appData.devices, appData.devices.length, d);
     });
   </script>
 </body>

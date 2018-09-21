@@ -6,7 +6,7 @@ module.exports = async function (context, req) {
     };
     return;
   }
-  var x = Number.parseInt(req.body.x), y = Number.parseInt(req.body.y);
+  var x = Number.parseInt(req.body.x), y = Number.parseInt(req.body.y), name = req.body.name;
   if (x === NaN || y === NaN) {
     context.res = {
       status: 400,
@@ -16,7 +16,7 @@ module.exports = async function (context, req) {
   }
   context.bindings.signalRMessages = [{
     target: 'update',
-    arguments: [x, y]
+    arguments: [x, y, name]
   }];
   context.res = { body: 'ok' };
 };
