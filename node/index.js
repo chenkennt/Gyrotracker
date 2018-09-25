@@ -73,13 +73,13 @@ app.post('/sensor/update', (req, res) => {
     res.status(400).send('body doesn\'t contain x or y');
     return;
   }
-  var x = Number.parseInt(req.body.x), y = Number.parseInt(req.body.y);
+  var x = Number.parseInt(req.body.x), y = Number.parseInt(req.body.y), name = req.body.name;
   if (x === NaN || y === NaN) {
     res.status(400).send('body doesn\'t contain x or y');
     return;
   }
   var t = process.hrtime();
-  signalR.send('sensor', 'update', [x, y])
+  signalR.send('sensor', 'update', [x, y, name])
     .then(() => res.send({
       message: 'ok',
       time: process.hrtime(t)
