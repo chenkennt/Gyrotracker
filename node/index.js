@@ -20,7 +20,7 @@ var SignalR = function (connectionString) {
   parseConectionString(connectionString);
 
   function getClientHubUrl(hubName) {
-    return `${endpoint}:5001/client/?hub=${hubName}`;
+    return `${endpoint}/client/?hub=${hubName}`;
   }
 
   function generateToken(audience) {
@@ -44,7 +44,7 @@ var SignalR = function (connectionString) {
       target: methodName,
       arguments: args
     };
-    var url = `${endpoint}:5002/api/v1-preview/hub/${hubName}`;
+    var url = `${endpoint}/api/v1/hubs/${hubName}`;
     var bearer = generateToken(url);
     return axios.post(url, payload, {
       headers: {
